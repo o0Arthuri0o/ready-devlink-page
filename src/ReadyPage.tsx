@@ -36,19 +36,13 @@ const initialValue = {
 const ReadyPage = () => {
 
     const [userData, setUserData] = useState<userDataType>(initialValue);
-    const [userImg, setUserImg] = useState('');
+    
     const {id} = useParams()
-
+    const userImg = `https://mtfhvhspnkvkdohoydvq.supabase.co/storage/v1/object/public/avatar/${id}/${id}.jpeg`
     useEffect(() => {
         fetch(`${process.env.SERVER_URL}/ready/${id}`)
             .then(response => response.json())
             .then(data => setUserData(data))
-            .catch(error => console.error(error));
-        fetch(`${process.env.SERVER_URL}/readyimg/${id}`)
-            .then(response => {
-                if(response.url) setUserImg(response.url)
-            })
-            // .then(data => console.log(data))
             .catch(error => console.error(error));
     }, []);
 
