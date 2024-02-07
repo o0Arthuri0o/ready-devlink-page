@@ -2,10 +2,11 @@ import  { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import './ReadyPage.scss'
 import { FaArrowRightLong } from "react-icons/fa6";
+import { createClient } from '@supabase/supabase-js';
 
 type Link = {
     id: string,
-    user_email: string,
+    user_id: string,
     title: string,
     link: string,
     color: string,
@@ -16,20 +17,20 @@ type userDataType = {
     links: Link[],
     profileInfo: {
         id: string,
-        user_email: string,
+        user_id: string,
         name: string,
         surname: string,
-        new_email: string
+        email: string
     }
 }
 const initialValue = {
-    links: [{id: '', user_email: '', title: '', link:'', color:'', text_color:''}],
+    links: [{id: '', user_id: '', title: '', link:'', color:'', text_color:''}],
     profileInfo: {
         id:'', 
-        user_email: 'string',
-        name: 'string',
-        surname: 'string',
-        new_email: 'string'
+        user_id: '',
+        name: '',
+        surname: '',
+        email: ''
     }
 }
 
@@ -38,12 +39,33 @@ const ReadyPage = () => {
     const [userData, setUserData] = useState<userDataType>(initialValue);
     
     const {id} = useParams()
-    const userImg = `https://mtfhvhspnkvkdohoydvq.supabase.co/storage/v1/object/public/avatar/${id}/${id}.jpeg`
+    const userImg = `https://mtfhvhspnkvkdohoydvq.supabase.co/storage/v1/object/public/avatar/${id}/avatar`
+
+    const supabase = createClient(`${process.env.SUPABASE_URL}`, `${process.env.API_KEY}`)
+
     useEffect(() => {
-        fetch(`${process.env.SERVER_URL}/ready/${id}`)
-            .then(response => response.json())
-            .then(data => setUserData(data))
-            .catch(error => console.error(error));
+      const fetchData = async() => {
+        const linksRes = await supabase.from('link_card').select('*').eq("user_id", id)
+        if(linksRes.error) {
+          console.log(linksRes.error)
+          alert('Ошибка получения ссылок')
+          return
+        }
+        const profileRes = await supabase.from('profile').select('*').eq("user_id", id).single()
+        if(profileRes.error) {
+          console.log(profileRes.error)
+          alert('Ошибка получения информации')
+          return
+        }
+        setUserData({
+          links: linksRes.data,
+          profileInfo: profileRes.data
+        })
+
+      }
+      
+      fetchData()
+        
     }, []);
 
     if (!userData || !userImg) {
@@ -59,12 +81,12 @@ const ReadyPage = () => {
           : <div className='skeleton-avatar'></div>
         }
         {userData.profileInfo.name || userData.profileInfo.surname ? 
-          <p>{userData.profileInfo.name +' ' + userData.profileInfo.surname}</p>
+          <p>{userData.profileInfo.name + ' ' + userData.profileInfo.surname}</p>
           :<div className='skeleton-name'></div>
         }
         {
-          userData.profileInfo.new_email ? 
-          <p>{userData.profileInfo.new_email}</p>
+          userData.profileInfo.email ? 
+          <p>{userData.profileInfo.email}</p>
           :<div className='skeleton-email'></div>
         }
 
