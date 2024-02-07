@@ -1,0 +1,6 @@
+{
+    "rewrites": [
+      { "source": "/:user_id", "destination": "/" }
+    ]
+  }
+  
