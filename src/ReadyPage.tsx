@@ -39,19 +39,21 @@ const ReadyPage = () => {
     const [userData, setUserData] = useState<userDataType>(initialValue);
     
     const {id} = useParams()
-    const userImg = `https://mtfhvhspnkvkdohoydvq.supabase.co/storage/v1/object/public/avatar/${id}/avatar`
+    const userKey= id?.split('.')[0]
+    const imgKey= id?.split('.')[1]
+    const userImg = `https://mtfhvhspnkvkdohoydvq.supabase.co/storage/v1/object/public/avatar/${userKey}/${imgKey}`
 
     const supabase = createClient(`${process.env.SUPABASE_URL}`, `${process.env.API_KEY}`)
 
     useEffect(() => {
       const fetchData = async() => {
-        const linksRes = await supabase.from('link_card').select('*').eq("user_id", id)
+        const linksRes = await supabase.from('link_card').select('*').eq("user_id", userKey)
         if(linksRes.error) {
           console.log(linksRes.error)
           alert('Ошибка получения ссылок')
           return
         }
-        const profileRes = await supabase.from('profile').select('*').eq("user_id", id).single()
+        const profileRes = await supabase.from('profile').select('*').eq("user_id", userKey).single()
         if(profileRes.error) {
           console.log(profileRes.error)
           alert('Ошибка получения информации')
